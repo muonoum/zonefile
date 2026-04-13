@@ -64,9 +64,6 @@ fn merge_messages(message1: Message(i), message2: Message(i)) -> Message(i) {
   let Message(position2, error2, labels2) = message2
   let labels = set.union(labels1, labels2)
 
-  // echo #(position1, error1, position2, error2)
-  // assert position1 == position2
-
   case error1, error2 {
     Some(_), None -> Message(..message1, labels:)
     None, Some(_) -> Message(..message2, labels:)

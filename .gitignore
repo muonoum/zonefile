@@ -2,7 +2,7 @@
 *.ez
 /build
 erl_crash.dump
-/temp
 /.restart
+/archive
 /notes
-/test-data
+/data
