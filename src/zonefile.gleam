@@ -16,7 +16,7 @@ pub fn main() -> Nil {
       case strings.parse(source, parser.nodes()) {
         Ok(nodes) -> {
           format.print_nodes(nodes, None, None)
-          io.println_error(ansi.green("OK ") <> path)
+          io.println_error(ansi.green("ok ") <> path)
         }
 
         Error(message) ->
