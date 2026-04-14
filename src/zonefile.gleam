@@ -3,7 +3,7 @@ import gleam/io
 import gleam/option.{None}
 import gleam/string
 import gleam_community/ansi
-import parsec
+import parsec/strings
 import simplifile
 import zonefile/format
 import zonefile/parser
@@ -13,7 +13,7 @@ pub fn main() -> Nil {
 
   case simplifile.read(path) {
     Ok(source) ->
-      case parsec.parse_string(source, parser.nodes()) {
+      case strings.parse(source, parser.nodes()) {
         Ok(nodes) -> {
           format.print_nodes(nodes, None, None)
           io.println_error(ansi.green("OK ") <> path)

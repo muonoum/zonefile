@@ -1,8 +1,6 @@
 import gleam/bool
-import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/set.{type Set}
-import gleam/string
 import gleam/yielder.{type Yielder}
 
 // https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/parsec-paper-letter.pdf
@@ -10,9 +8,6 @@ import gleam/yielder.{type Yielder}
 pub opaque type Parser(i, v) {
   Parser(fn(State(i)) -> Consumed(i, v))
 }
-
-pub type StringParser(v) =
-  Parser(String, v)
 
 type State(i) {
   State(input: Yielder(i), position: Int)
@@ -99,22 +94,6 @@ pub fn parse(input: Yielder(i), parser: Parser(i, v)) -> Result(v, Message(i)) {
   }
 }
 
-pub fn parse_string(
-  string: String,
-  parser: StringParser(value),
-) -> Result(value, Message(String)) {
-  let input = {
-    use state <- yielder.unfold(string)
-
-    case string.pop_grapheme(state) {
-      Error(Nil) -> yielder.Done
-      Ok(#(grapheme, state)) -> yielder.Next(grapheme, state)
-    }
-  }
-
-  parse(input, parser)
-}
-
 pub fn succeed(value: v) -> Parser(i, v) {
   use State(_input, position) as state <- Parser
   let message = Message(position:, error: None, labels: set.new())
@@ -158,7 +137,7 @@ pub fn expect(check: fn(i) -> Bool) -> Parser(i, i) {
   }
 }
 
-pub fn keep(parser: Parser(i, a), then: fn(a) -> Parser(i, b)) -> Parser(i, b) {
+pub fn do(parser: Parser(i, a), then: fn(a) -> Parser(i, b)) -> Parser(i, b) {
   use state <- Parser
 
   case run(parser, state) {
@@ -255,83 +234,4 @@ pub fn try(parser: Parser(i, v)) -> Parser(i, v) {
 pub fn lazy(parser: fn() -> Parser(i, v)) -> Parser(i, v) {
   use state <- Parser
   run(parser(), state)
-}
-
-pub fn drop(parser: Parser(i, a), then: fn() -> Parser(i, b)) -> Parser(i, b) {
-  keep(parser, fn(_) { then() })
-}
-
-pub fn end() -> Parser(i, Nil) {
-  not_followed_by(any())
-}
-
-pub fn nil(parser: Parser(i, v)) -> Parser(i, Nil) {
-  drop(parser, fn() { succeed(Nil) })
-}
-
-pub fn sequence(parsers: List(Parser(i, v))) -> Parser(i, List(v)) {
-  use result, parser <- list.fold_right(parsers, succeed([]))
-  use value <- keep(parser)
-  use result <- map(result, _)
-  [value, ..result]
-}
-
-pub fn maybe(parser: Parser(i, v)) -> Parser(i, Option(v)) {
-  choice(map(parser, Some), succeed(None))
-}
-
-pub fn get(parser: Parser(i, b), until end: Parser(i, a)) -> Parser(i, b) {
-  drop(not_followed_by(end), fn() { parser })
-}
-
-pub fn map(parser: Parser(i, a), mapper: fn(a) -> b) -> Parser(i, b) {
-  use value <- keep(parser)
-  succeed(mapper(value))
-}
-
-pub fn any() -> Parser(i, i) {
-  expect(fn(_) { True })
-}
-
-pub fn not_followed_by(parser: Parser(i, v)) -> Parser(i, Nil) {
-  try(choice(drop(parser, fail), succeed(Nil)))
-}
-
-pub fn one_of(parsers: List(Parser(i, v))) -> Parser(i, v) {
-  use result, parser <- list.fold_right(parsers, fail())
-  choice(parser, result)
-}
-
-pub fn many(parser: Parser(i, v)) -> Parser(i, List(v)) {
-  choice(some(parser), succeed([]))
-}
-
-pub fn some(parser: Parser(i, v)) -> Parser(i, List(v)) {
-  use first <- keep(parser)
-  use rest <- keep(many(parser))
-  succeed([first, ..rest])
-}
-
-pub fn join(
-  parser: Parser(i, List(String)),
-  separator: String,
-) -> Parser(i, String) {
-  map(parser, string.join(_, separator))
-}
-
-pub fn grapheme(wanted: String) -> StringParser(String) {
-  use grapheme <- expect
-  grapheme == wanted
-}
-
-pub fn string(wanted: String) -> StringParser(String) {
-  case string.pop_grapheme(wanted) {
-    Error(Nil) -> succeed("")
-
-    Ok(#(first, rest)) -> {
-      use <- drop(grapheme(first))
-      use <- drop(string(rest))
-      succeed(wanted)
-    }
-  }
 }

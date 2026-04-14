@@ -1,20 +1,20 @@
 import gleam/bool
 import gleam/list
 import gleam/option.{type Option, None, Some}
+import parsec.{fail, label, succeed, try}
 
-import parsec.{
-  type StringParser as Parser, any, drop, end, fail, get, grapheme, keep, label,
-  many, maybe, one_of, some, string, succeed, try,
+import parsec/parsers.{
+  any, between, drop, end, get, keep, many, maybe, one_of, some, unwrap,
+}
+
+import parsec/strings.{
+  type Parser, absent, alphanumeric, concat, grapheme, integer, letter,
+  line_break, present, space, string, trim,
 }
 
 import zonefile/node.{
   type Data, type Domain, type Node, Data, Empty, EmptyDomain, Include,
   NamedDomain, Origin, OriginDomain, Record, Ttl,
-}
-
-import zonefile/parsers.{
-  absent, alphanumeric, between, concat, integer, letter, line_break, present,
-  space, trim, unwrap,
 }
 
 pub fn nodes() -> Parser(List(Node)) {

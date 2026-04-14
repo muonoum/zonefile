@@ -1,12 +1,12 @@
 import gleam/option.{None, Some}
 import gleeunit/should
-import parsec
+import parsec/strings
 import zonefile/node.{Data, OriginDomain, Record}
 import zonefile/parser
 
 pub fn parens_with_trailing_data_test() {
   "@ TXT ( 1 ) 2\n"
-  |> parsec.parse_string(parser.nodes())
+  |> strings.parse(parser.nodes())
   |> should.be_ok
   |> should.equal([
     Record(domain: OriginDomain, ttl: None, class: None, type_: "TXT", data: [
@@ -16,7 +16,7 @@ pub fn parens_with_trailing_data_test() {
   ])
 
   "@ TXT 1 ( 2 ) 3\n"
-  |> parsec.parse_string(parser.nodes())
+  |> strings.parse(parser.nodes())
   |> should.be_ok
   |> should.equal([
     Record(domain: OriginDomain, ttl: None, class: None, type_: "TXT", data: [
@@ -27,7 +27,7 @@ pub fn parens_with_trailing_data_test() {
   ])
 
   "@ TXT 1 (2) 3\n"
-  |> parsec.parse_string(parser.nodes())
+  |> strings.parse(parser.nodes())
   |> should.be_ok
   |> should.equal([
     Record(domain: OriginDomain, ttl: None, class: None, type_: "TXT", data: [
@@ -38,7 +38,7 @@ pub fn parens_with_trailing_data_test() {
   ])
 
   "@ TXT 1 ( 2 ) 3 ; 4\n"
-  |> parsec.parse_string(parser.nodes())
+  |> strings.parse(parser.nodes())
   |> should.be_ok
   |> should.equal([
     Record(domain: OriginDomain, ttl: None, class: None, type_: "TXT", data: [
@@ -51,7 +51,7 @@ pub fn parens_with_trailing_data_test() {
 
 pub fn origin_no_class_no_ttl_record_test() {
   "@ A 10.0.0.1\n"
-  |> parsec.parse_string(parser.nodes())
+  |> strings.parse(parser.nodes())
   |> should.be_ok
   |> should.equal([
     Record(domain: OriginDomain, ttl: None, class: None, type_: "A", data: [
@@ -62,7 +62,7 @@ pub fn origin_no_class_no_ttl_record_test() {
 
 pub fn origin_no_class_record_test() {
   "@    300 A 10.0.0.1\n"
-  |> parsec.parse_string(parser.nodes())
+  |> strings.parse(parser.nodes())
   |> should.be_ok
   |> should.equal([
     Record(
@@ -79,7 +79,7 @@ pub fn origin_no_class_record_test() {
 
 pub fn origin_no_ttl_record_test() {
   "@    IN  A 10.0.0.1\n"
-  |> parsec.parse_string(parser.nodes())
+  |> strings.parse(parser.nodes())
   |> should.be_ok
   |> should.equal([
     Record(
