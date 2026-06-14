@@ -13,6 +13,13 @@ pub type Node {
     type_: String,
     data: List(Data),
   )
+  // Record(
+  //   record.RecordType,
+  //   domain: Domain,
+  //   ttl: Option(List(Int)),
+  //   class: Option(String),
+  //   data: List(Data),
+  // )
 }
 
 pub type Domain {
