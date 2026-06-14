@@ -25,7 +25,7 @@ fn read(path: String) -> Nil {
     Ok(source) ->
       case strings.parse(source, parser.nodes()) {
         Ok(nodes) -> {
-          format.print_nodes(nodes, None, None)
+          format.print_nodes(nodes, last_node: None, last_domain: None)
           io.println_error(ansi.green("ok ") <> path)
         }
 
