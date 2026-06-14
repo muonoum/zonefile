@@ -94,7 +94,11 @@ pub fn error_message2(message: parsec.Message(i)) -> String {
   string.join([line1, line2, "expected: " <> expected], "\n")
 }
 
-pub fn print_nodes(
+pub fn print_nodes(nodes: List(Node)) -> Nil {
+  print_nodes_loop(nodes, last_node: None, last_domain: None)
+}
+
+pub fn print_nodes_loop(
   nodes: List(Node),
   last_node last_node: Option(Node),
   last_domain last_domain: Option(String),
@@ -120,34 +124,34 @@ fn print_node(
 ) -> Nil {
   case node, last_node {
     node.Empty(None), Some(node.Empty(None)) ->
-      print_nodes(nodes, Some(node), last_domain:)
+      print_nodes_loop(nodes, Some(node), last_domain:)
 
     node.Empty(comment), _last_node -> {
       io.println(format_comment("", comment))
-      print_nodes(nodes, Some(node), last_domain:)
+      print_nodes_loop(nodes, Some(node), last_domain:)
     }
 
     node.Origin(domain:, comment:), _last_node -> {
       io.println(format_comment("$ORIGIN " <> domain, comment))
-      print_nodes(nodes, Some(node), last_domain:)
+      print_nodes_loop(nodes, Some(node), last_domain:)
     }
 
     node.Ttl(duration:, comment:), _last_node -> {
       format_comment("$TTL " <> int.to_string(int.sum(duration)), comment)
       |> io.println
-      print_nodes(nodes, Some(node), last_domain:)
+      print_nodes_loop(nodes, Some(node), last_domain:)
     }
 
     node.Include(path:, origin: None, comment:), _last_node -> {
       format_comment("$INCLUDE " <> path <> " ", comment)
       |> io.println
-      print_nodes(nodes, Some(node), last_domain:)
+      print_nodes_loop(nodes, Some(node), last_domain:)
     }
 
     node.Include(path:, origin: Some(domain), comment:), _last_node -> {
       format_comment("$INCLUDE " <> path <> " " <> domain <> " ", comment)
       |> io.println
-      print_nodes(nodes, Some(node), last_domain:)
+      print_nodes_loop(nodes, Some(node), last_domain:)
     }
 
     node.Record(domain:, ttl:, class:, type_:, data:), _last_node -> {
@@ -185,7 +189,7 @@ fn print_node(
         }
       }
 
-      print_nodes(nodes, last_node: Some(node), last_domain: case domain {
+      print_nodes_loop(nodes, last_node: Some(node), last_domain: case domain {
         node.EmptyDomain -> last_domain
         node.NamedDomain(domain) -> Some(domain)
         node.OriginDomain -> Some("@")

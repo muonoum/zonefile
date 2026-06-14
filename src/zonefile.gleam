@@ -3,7 +3,6 @@ import filepath
 import gleam/bool
 import gleam/io
 import gleam/list
-import gleam/option.{None}
 import gleam/string
 import gleam_community/ansi
 import parsec/strings
@@ -25,7 +24,7 @@ fn read(path: String) -> Nil {
     Ok(source) ->
       case strings.parse(source, parser.nodes()) {
         Ok(nodes) -> {
-          format.print_nodes(nodes, last_node: None, last_domain: None)
+          format.print_nodes(nodes)
           io.println_error(ansi.green("ok ") <> path)
         }
 
