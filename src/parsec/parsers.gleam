@@ -1,7 +1,7 @@
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
-import parsec.{type Parser, fail, succeed}
+import parsec.{type Parser, fail, succeed, try}
 
 pub const keep = parsec.do
 
@@ -33,7 +33,7 @@ pub fn sequence(parsers: List(Parser(i, v))) -> Parser(i, List(v)) {
 }
 
 pub fn maybe(parser: Parser(i, v)) -> Parser(i, Option(v)) {
-  parsec.choice(map(parser, Some), succeed(None))
+  parsec.choice(map(try(parser), Some), succeed(None))
 }
 
 pub fn get(parser: Parser(i, b), until end: Parser(i, a)) -> Parser(i, b) {

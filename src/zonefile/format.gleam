@@ -139,13 +139,13 @@ fn print_node(
     }
 
     node.Include(path:, origin: None, comment:), _last_node -> {
-      format_comment("$INCLUDE " <> path, comment)
+      format_comment("$INCLUDE " <> path <> " ", comment)
       |> io.println
       print_nodes(nodes, Some(node), last_domain:)
     }
 
     node.Include(path:, origin: Some(domain), comment:), _last_node -> {
-      format_comment("$INCLUDE " <> path <> " " <> domain, comment)
+      format_comment("$INCLUDE " <> path <> " " <> domain <> " ", comment)
       |> io.println
       print_nodes(nodes, Some(node), last_domain:)
     }

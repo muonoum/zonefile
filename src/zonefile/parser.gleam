@@ -45,11 +45,6 @@ fn quoted_string() -> Parser(String) {
   succeed("\"" <> value <> "\"")
 }
 
-// TODO
-fn file_name() -> Parser(String) {
-  concat(some(one_of([alphanumeric(), present("./_-")])))
-}
-
 fn domain_name() -> Parser(String) {
   one_of([wildcard(), concat(some(domain_label()))])
 }
@@ -111,10 +106,13 @@ fn ttl_directive() -> Parser(fn(Option(String)) -> Node) {
 fn include_directive() -> Parser(fn(Option(String)) -> Node) {
   use <- drop(string("INCLUDE"))
   use <- drop(some(space()))
-  use <- drop(grapheme("\""))
-  use path <- keep(file_name())
-  use <- drop(grapheme("\""))
-  use origin <- keep(maybe(try(drop(some(space()), domain_name))))
+
+  use path <- keep({
+    let until = one_of([space(), line_break(), grapheme(";")])
+    one_of([quoted_string(), concat(some(get(any(), until:)))])
+  })
+
+  use origin <- keep(maybe(drop(some(space()), domain_name)))
   succeed(Include(path:, origin:, comment: _))
 }
 
@@ -275,7 +273,7 @@ fn trailing_data(data: List(Data)) -> Parser(List(Data)) {
       // data ) ; comment --> (data, comment)
       list.reverse([Data(..trailing, value:), ..rest])
 
-    "", _data -> panic
+    "", _data -> data
     _other, _wise -> list.append(data, [trailing])
   })
 }
