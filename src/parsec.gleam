@@ -193,6 +193,25 @@ pub fn choice(a: Parser(i, v), b: Parser(i, v)) -> Parser(i, v) {
   }
 }
 
+pub fn try(parser: Parser(i, v)) -> Parser(i, v) {
+  use state <- Parser
+
+  case run(parser, state) {
+    Empty(reply) -> Empty(reply)
+
+    Consumed(reply) ->
+      case reply() {
+        Failure(message) -> Empty(Failure(message))
+        _success -> Consumed(reply)
+      }
+  }
+}
+
+pub fn lazy(parser: fn() -> Parser(i, v)) -> Parser(i, v) {
+  use state <- Parser
+  run(parser(), state)
+}
+
 pub fn label(parser: Parser(i, v), label: String) -> Parser(i, v) {
   use state <- Parser
 
@@ -215,23 +234,4 @@ pub fn label(parser: Parser(i, v), label: String) -> Parser(i, v) {
 fn put_label(message: Message(i), label: String) -> Message(i) {
   let Message(position, error, _labels) = message
   Message(position:, error:, labels: set.from_list([label]))
-}
-
-pub fn try(parser: Parser(i, v)) -> Parser(i, v) {
-  use state <- Parser
-
-  case run(parser, state) {
-    Empty(reply) -> Empty(reply)
-
-    Consumed(reply) ->
-      case reply() {
-        Failure(message) -> Empty(Failure(message))
-        _success -> Consumed(reply)
-      }
-  }
-}
-
-pub fn lazy(parser: fn() -> Parser(i, v)) -> Parser(i, v) {
-  use state <- Parser
-  run(parser(), state)
 }

@@ -77,23 +77,6 @@ fn get_position(source: String, position: Int) -> #(Int, Int, Int) {
   }
 }
 
-pub fn error_message2(message: parsec.Message(i)) -> String {
-  let parsec.Message(position:, error:, labels:) = message
-  let line1 = "parse error at position " <> int.to_string(position)
-
-  let line2 = case error {
-    None -> "unknown error"
-    Some(parsec.UnexpectedEnd) -> "unexpected end of input"
-
-    Some(parsec.UnexpectedToken(token)) ->
-      "unexpected " <> string.inspect(token)
-  }
-
-  use <- bool.guard(set.is_empty(labels), string.join([line1, line2], "\n"))
-  let expected = set.to_list(labels) |> string.join(", ")
-  string.join([line1, line2, "expected: " <> expected], "\n")
-}
-
 pub fn print_nodes(nodes: List(Node)) -> Nil {
   print_nodes_loop(nodes, last_node: None, last_domain: None)
 }
