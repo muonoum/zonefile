@@ -220,13 +220,10 @@ pub fn label(parser: Parser(i, v), label: String) -> Parser(i, v) {
 
     Empty(reply) ->
       Empty(case reply {
-        Failure(message) ->
-          put_label(message, label)
-          |> Failure
+        Failure(message) -> Failure(put_label(message, label))
 
         Success(value:, state:, message:) ->
-          put_label(message, label)
-          |> Success(value:, state:, message: _)
+          Success(value:, state:, message: put_label(message, label))
       })
   }
 }
