@@ -5,7 +5,7 @@ import gleam/io
 import gleam/list
 import gleam/string
 import gleam_community/ansi
-import parsec/strings
+import muomono/parsec
 import simplifile
 import zonefile/format
 import zonefile/parser
@@ -21,8 +21,12 @@ pub fn main() -> Nil {
 
 fn read(path: String) -> Nil {
   case simplifile.read(path) {
-    Ok(source) ->
-      case strings.parse(source, parser.nodes()) {
+    Ok(source) -> {
+      let result =
+        parsec.from_string(source)
+        |> parsec.parse(parser.nodes())
+
+      case result {
         Ok(nodes) -> {
           format.print_nodes(nodes)
           io.println_error(ansi.green("ok ") <> path)
@@ -32,6 +36,7 @@ fn read(path: String) -> Nil {
           format.error_message(path:, source:, message:)
           |> io.println_error
       }
+    }
 
     Error(error) ->
       io.println_error(

@@ -8,16 +8,16 @@ import gleam/pair
 import gleam/set
 import gleam/string
 import gleam_community/ansi
-import parsec
+import muomono/parsec
 import zonefile/node.{type Node}
 
 pub fn error_message(path path, source source, message message) -> String {
-  let parsec.Message(position:, error:, labels:) = message
+  let parsec.Message(index:, error:, labels:) = message
 
   format_error(
     path:,
     source:,
-    position:,
+    index:,
     message: case error {
       None -> "unknown error"
       Some(parsec.UnexpectedEnd) -> "unexpected end of input"
@@ -36,11 +36,11 @@ pub fn error_message(path path, source source, message message) -> String {
 fn format_error(
   path path,
   source source,
-  position position,
+  index index,
   message message,
   hint hint,
 ) -> String {
-  let #(_position, row, column) = get_position(source, position)
+  let #(_position, row, column) = get_position(source, index)
   let assert Ok(line) = get_line(source, row)
   let line = string.slice(line, 0, column)
   let position = int.to_string(row) <> ":" <> int.to_string(column)

@@ -1,15 +1,15 @@
 import gleam/bool
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import parsec.{fail, label, succeed, try}
+import muomono/parsec.{fail, label, succeed, try}
 
-import parsec/parsers.{
+import muomono/parsec/parsers.{
   any, between, drop, end, get, keep, many, maybe, one_of, some, unwrap,
 }
 
-import parsec/strings.{
-  type Parser, absent, alphanumeric, concat, grapheme, integer, letter,
-  line_break, present, space, string, trim,
+import muomono/parsec/strings.{
+  type Parser, absent, alphanumeric, concat, grapheme, graphemes, integer,
+  letter, line_break, present, space, trim,
 }
 
 import zonefile/node.{
@@ -40,8 +40,8 @@ fn line_suffix() -> Parser(Option(String)) {
 
 fn quoted_string() -> Parser(String) {
   let quote = grapheme("\"")
-  let quoted = one_of([try(string("\\\"")), absent("\"")])
-  use value <- keep(concat(between(quote, quote, quoted)))
+  let quoted = one_of([try(graphemes("\\\"")), absent("\"")])
+  use value <- keep(concat(between(quoted, quote, quote)))
   succeed("\"" <> value <> "\"")
 }
 
@@ -90,21 +90,21 @@ fn directive() -> Parser(Node) {
 }
 
 fn origin_directive() -> Parser(fn(Option(String)) -> Node) {
-  use <- drop(string("ORIGIN"))
+  use <- drop(graphemes("ORIGIN"))
   use <- drop(some(space()))
   use domain <- keep(domain_name())
   succeed(Origin(domain:, comment: _))
 }
 
 fn ttl_directive() -> Parser(fn(Option(String)) -> Node) {
-  use <- drop(string("TTL"))
+  use <- drop(graphemes("TTL"))
   use <- drop(some(space()))
   use duration <- keep(some(duration()))
   succeed(Ttl(duration:, comment: _))
 }
 
 fn include_directive() -> Parser(fn(Option(String)) -> Node) {
-  use <- drop(string("INCLUDE"))
+  use <- drop(graphemes("INCLUDE"))
   use <- drop(some(space()))
 
   use path <- keep({
@@ -181,7 +181,7 @@ fn record_ttl() -> Parser(List(Int)) {
 }
 
 fn record_class() -> Parser(String) {
-  use class <- keep(string("IN"))
+  use class <- keep(graphemes("IN"))
   use <- drop(some(space()))
   succeed(class)
 }
